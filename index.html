@@ -147,24 +147,24 @@ footer{color:var(--muted);font-size:.75rem;text-align:right}
 
   <ul class="shelf">
     <li class="app">
-      <canvas class="ico" id="ico-kinki" width="144" height="144" aria-hidden="true"></canvas>
-      <h2>郵便料金改定 2026年10月1日<span class="chip">新料金</span></h2>
-      <p class="desc">近畿発のゆうパック運賃表です。2026年10月1日からの新料金に対応しています。郵便番号を入れると届け先の都道府県がわかります。</p>
+      <canvas class="ico" id="ico-yuupack" width="144" height="144" aria-hidden="true"></canvas>
+      <h2>ゆうパック・郵便料金</h2>
+      <p class="desc">京都発のゆうパック料金（チルド対応）と、定形・定形外・速達・書留の郵便料金を計算できます。</p>
       <div class="actions">
-        <a class="btn primary" href="https://aaiuioo-maker.github.io/kinki-unchin/?v=10&amp;openExternalBrowser=1" target="_blank" rel="noopener">開く</a>
-        <button class="btn copy" type="button" id="copy-kinki" data-url="https://aaiuioo-maker.github.io/kinki-unchin/?v=10&amp;openExternalBrowser=1">URLをコピー</button>
+        <a class="btn primary" href="https://aaiuioo-maker.github.io/yuupack-yuubin/?v=10&amp;openExternalBrowser=1" target="_blank" rel="noopener">開く</a>
+        <button class="btn copy" type="button" id="copy-yuupack" data-url="https://aaiuioo-maker.github.io/yuupack-yuubin/?v=10&amp;openExternalBrowser=1">URLをコピー</button>
       </div>
-      <div class="url">https://aaiuioo-maker.github.io/kinki-unchin/?v=10&amp;openExternalBrowser=1</div>
+      <div class="url">https://aaiuioo-maker.github.io/yuupack-yuubin/?v=10&amp;openExternalBrowser=1</div>
     </li>
     <li class="app">
       <canvas class="ico" id="ico-kokusai" width="144" height="144" aria-hidden="true"></canvas>
-      <h2>国際小包料金</h2>
-      <p class="desc">EMS・航空便・船便の国際小包料金表です。</p>
+      <h2>国際小包料金・引受条件</h2>
+      <p class="desc">EMS・航空便・船便の国際小包料金を調べられます。国ごとのサイズ・重さの引受条件も確認できます。</p>
       <div class="actions">
-        <a class="btn primary" href="https://aaiuioo-maker.github.io/kokusai-kozutsumi/?v=1&amp;openExternalBrowser=1" target="_blank" rel="noopener">開く</a>
-        <button class="btn copy" type="button" id="copy-kokusai" data-url="https://aaiuioo-maker.github.io/kokusai-kozutsumi/?v=1&amp;openExternalBrowser=1">URLをコピー</button>
+        <a class="btn primary" href="https://aaiuioo-maker.github.io/kokusai-yuubin/?v=12&amp;openExternalBrowser=1" target="_blank" rel="noopener">開く</a>
+        <button class="btn copy" type="button" id="copy-kokusai" data-url="https://aaiuioo-maker.github.io/kokusai-yuubin/?v=12&amp;openExternalBrowser=1">URLをコピー</button>
       </div>
-      <div class="url">https://aaiuioo-maker.github.io/kokusai-kozutsumi/?v=1&amp;openExternalBrowser=1</div>
+      <div class="url">https://aaiuioo-maker.github.io/kokusai-yuubin/?v=12&amp;openExternalBrowser=1</div>
     </li>
   </ul>
 
@@ -193,48 +193,18 @@ footer{color:var(--muted);font-size:.75rem;text-align:right}
     <p class="line">LINE の中で開くと、ホーム画面に追加できません。右上の <kbd>︙</kbd>（iPhone は下の <kbd>共有</kbd>）から <kbd>ブラウザで開く</kbd> を選び、Chrome や Safari で開いてから追加してください。</p>
     <p class="note">このページ（このページ）も同じやり方でホーム画面に追加できます。</p>
   </section>
-  <footer>v4</footer>
+  <footer>v5</footer>
 </div>
 
 <script>
-function ccChar(ctx, ox, oy, p){
-  var px=function(x,y,w,h,col){ctx.fillStyle=col;ctx.fillRect(ox+x*p,oy+y*p,w*p,h*p);};
-  var o='#d97757';
-  px(2,0,8,6,o); px(0,2,2,2,o); px(10,2,2,2,o);               // 体と両腕
-  px(2,6,1,2,o); px(4,6,1,2,o); px(7,6,1,2,o); px(9,6,1,2,o); // 足4本
-  px(3,1,1,1,'#1a1612'); px(8,1,1,1,'#1a1612');               // 目
-}
-function roundRect(ctx,x,y,w,h,r){ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,y,w,h,r);else ctx.rect(x,y,w,h);}
 
-// 近畿発 運賃表（kinki-unchin の drawIcon と同じ）
-(function(){
-  var cv=document.getElementById('ico-kinki'), size=cv.width, ctx=cv.getContext('2d'), s=size/180;
-  var font=function(n){return '700 '+(n*s)+'px "Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif';};
-  var poly=function(pts,col){ctx.fillStyle=col;ctx.beginPath();pts.forEach(function(q,i){i?ctx.lineTo(q[0]*s,q[1]*s):ctx.moveTo(q[0]*s,q[1]*s);});ctx.closePath();ctx.fill();};
-  var bg=ctx.createLinearGradient(0,0,0,size); bg.addColorStop(0,'#d9332a'); bg.addColorStop(1,'#c8231b');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,size,size);
-  ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.fillStyle='#fff'; ctx.font=font(27); ctx.fillText('ゆうパック',90*s,31*s);
-  ctx.font=font(28); ctx.fillText('近畿発',90*s,155*s);
-  poly([[45,75],[55,55],[135,55],[125,75]],'#fbf3e6');
-  poly([[125,75],[135,55],[135,115],[125,125]],'#ecd0ae');
-  poly([[45,75],[125,75],[125,125],[45,125]],'#fdf0df');
-  poly([[79,75],[89,55],[101,55],[91,75]],'#fde08a');
-  poly([[79,75],[91,75],[91,125],[79,125]],'#fdd977');
-  [[52,'〒'],[96,'¥']].forEach(function(a){
-    var x=a[0]; ctx.fillStyle='#fff'; ctx.strokeStyle='#c8231b'; ctx.lineWidth=2*s;
-    roundRect(ctx,x*s,82*s,22*s,28*s,3*s); ctx.fill(); ctx.stroke();
-    ctx.fillStyle='#c8231b'; ctx.font=font(18); ctx.fillText(a[1],(x+11)*s,96.5*s);
-  });
-  ccChar(ctx,76*s,94*s,1.5*s);
-})();
-// 国際小包料金（kokusai-kozutsumi の画像＋左側のキャラクター）
-(function(){
-  var cv=document.getElementById('ico-kokusai'), size=cv.width, ctx=cv.getContext('2d'), s=size/180;
+// ゆうパック・郵便料金（yuupack-yuubin）と 国際小包料金・引受条件（kokusai-yuubin）のアイコン画像
+[['ico-yuupack','yuupack-yuubin.png'],['ico-kokusai','kokusai-yuubin.png']].forEach(function(a){
+  var cv=document.getElementById(a[0]), size=cv.width, ctx=cv.getContext('2d');
   var img=new Image();
-  img.onload=function(){ ctx.drawImage(img,0,0,size,size); ccChar(ctx,14*s,72*s,3*s); };
-  img.src='kokusai.png';
-})();
+  img.onload=function(){ ctx.drawImage(img,0,0,size,size); };
+  img.src=a[1];
+});
 
 // URLをコピー
 document.querySelectorAll('.copy').forEach(function(b){
