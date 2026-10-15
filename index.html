@@ -73,8 +73,41 @@ footer{color:var(--muted);font-size:.75rem;text-align:right}
 #ccWakePop .ccw-wake { background: #d97757; color: #fff; }
 #ccWakePop .ccw-close { background: #f8f8f8; color: #0b1120; }
 </style>
+<!-- パスワード（4桁）の鍵：開いたら、この端末では次から聞かない -->
+<script>try{if(localStorage.getItem('tana2-unlock')!=='1')document.documentElement.classList.add('locked')}catch(e){document.documentElement.classList.add('locked')}</script>
+<style>
+#lock{display:none}
+html.locked body>*:not(#lock){display:none!important}
+html.locked #lock{display:flex;min-height:100vh;min-height:100dvh;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px 16px;box-sizing:border-box}
+#lock h1{font-family:var(--display);font-size:1.8rem;margin:0;letter-spacing:.04em}
+#lock p{margin:0;color:var(--muted)}
+.lock-dots{display:flex;gap:16px;height:20px}
+.lock-dots span{width:16px;height:16px;border-radius:50%;border:2px solid var(--accent);box-sizing:border-box}
+.lock-dots span.on{background:var(--accent)}
+.lock-dots.ng{animation:lock-shake .35s}
+@keyframes lock-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+.lock-keys{display:grid;grid-template-columns:repeat(3,72px);gap:14px}
+.lock-keys button{width:72px;height:72px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:600 1.6rem var(--body);cursor:pointer}
+.lock-keys button:active{background:var(--chip)}
+.lock-keys button.sub{font-size:.9rem;border:0;background:none}
+.lock-keys button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+#lock-msg{min-height:1.4em;color:var(--accent);font-weight:700}
+@media (prefers-reduced-motion:reduce){.lock-dots.ng{animation:none}}
+</style>
 </head>
 <body>
+<div id="lock" role="dialog" aria-label="パスワードの入力">
+  <h1>アプリ棚2</h1>
+  <p>パスワード（4桁）を入れてください</p>
+  <div class="lock-dots" id="lock-dots" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+  <p id="lock-msg" aria-live="polite"></p>
+  <div class="lock-keys" id="lock-keys">
+    <button type="button">1</button><button type="button">2</button><button type="button">3</button>
+    <button type="button">4</button><button type="button">5</button><button type="button">6</button>
+    <button type="button">7</button><button type="button">8</button><button type="button">9</button>
+    <span></span><button type="button">0</button><button type="button" class="sub" data-k="del">消す</button>
+  </div>
+</div>
 <!-- ===== キャラクターの自己紹介（左上の Claude Code と GitHub のマークをタップすると出る。cc-intro） ===== -->
 <style>
   #ccIntro {
@@ -193,7 +226,7 @@ footer{color:var(--muted);font-size:.75rem;text-align:right}
     <p class="line">LINE の中で開くと、ホーム画面に追加できません。右上の <kbd>︙</kbd>（iPhone は下の <kbd>共有</kbd>）から <kbd>ブラウザで開く</kbd> を選び、Chrome や Safari で開いてから追加してください。</p>
     <p class="note">このページ（このページ）も同じやり方でホーム画面に追加できます。</p>
   </section>
-  <footer>v5</footer>
+  <footer>v6</footer>
 </div>
 
 <script>
@@ -1215,6 +1248,49 @@ window.CC_EXTRA = [...MOVES, ...SLEEPS, ...FOODS, ...FOODS2, ...FOODS3, ...WAYS,
   pop.querySelector('.ccw-wake').addEventListener('click', () => { window.CC_AWAKE = true; pop.hidden = true; });
   pop.querySelector('.ccw-close').addEventListener('click', () => { pop.hidden = true; });
   pop.addEventListener('click', e => { if (e.target === pop) pop.hidden = true; });
+})();
+</script>
+<script>
+// パスワード（4桁）の鍵。パスワードそのものは書かず、ハッシュ（SHA-256）だけを置いて比べる
+(function lock(){
+  const HASH = '66b1461a64e3a1c877a776ebb0239d72fc683aece13cf8ff7b26a4a6598591c8';
+  const root = document.documentElement;
+  if (!root.classList.contains('locked')) return;
+  const dots = Array.from(document.querySelectorAll('#lock-dots span'));
+  const msg = document.getElementById('lock-msg');
+  let pin = '';
+  const show = () => dots.forEach((d, i) => d.classList.toggle('on', i < pin.length));
+  async function hash(s) {
+    const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+    return Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, '0')).join('');
+  }
+  async function check() {
+    if (await hash('app-tana-2:' + pin) === HASH) {
+      try { localStorage.setItem('tana2-unlock', '1'); } catch (e) {}
+      root.classList.remove('locked');
+      return;
+    }
+    msg.textContent = 'パスワードがちがいます';
+    const box = document.getElementById('lock-dots');
+    box.classList.remove('ng'); void box.offsetWidth; box.classList.add('ng');
+    pin = ''; show();
+  }
+  function press(k) {
+    if (k === 'del') { pin = pin.slice(0, -1); show(); return; }
+    if (pin.length >= 4) return;
+    msg.textContent = '';
+    pin += k; show();
+    if (pin.length === 4) setTimeout(check, 120);
+  }
+  document.getElementById('lock-keys').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    press(b.dataset.k || b.textContent.trim());
+  });
+  document.addEventListener('keydown', e => {
+    if (!root.classList.contains('locked')) return;
+    if (/^[0-9]$/.test(e.key)) press(e.key);
+    else if (e.key === 'Backspace') press('del');
+  });
 })();
 </script>
 </body>
