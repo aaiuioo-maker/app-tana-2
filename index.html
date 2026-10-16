@@ -73,8 +73,8 @@ footer{color:var(--muted);font-size:.75rem;text-align:right}
 #ccWakePop .ccw-wake { background: #d97757; color: #fff; }
 #ccWakePop .ccw-close { background: #f8f8f8; color: #0b1120; }
 </style>
-<!-- パスワード（4桁）の鍵：開いたら、この端末では次から聞かない -->
-<script>try{if(localStorage.getItem('tana2-unlock')!=='1')document.documentElement.classList.add('locked')}catch(e){document.documentElement.classList.add('locked')}</script>
+<!-- パスワード（4桁）の鍵：開くたびに聞く（しばらく別のアプリを見ていたときも聞き直す） -->
+<script>document.documentElement.classList.add('locked')</script>
 <style>
 #lock{display:none}
 html.locked body>*:not(#lock){display:none!important}
@@ -230,7 +230,7 @@ html.locked #lock{display:flex;min-height:100vh;min-height:100dvh;flex-direction
     <p class="line">LINE の中で開くと、ホーム画面に追加できません。右上の <kbd>︙</kbd>（iPhone は下の <kbd>共有</kbd>）から <kbd>ブラウザで開く</kbd> を選び、Chrome や Safari で開いてから追加してください。</p>
     <p class="note">このページ（このページ）も同じやり方でホーム画面に追加できます。</p>
   </section>
-  <footer>v7</footer>
+  <footer>v8</footer>
 </div>
 
 <script>
@@ -1259,7 +1259,6 @@ window.CC_EXTRA = [...MOVES, ...SLEEPS, ...FOODS, ...FOODS2, ...FOODS3, ...WAYS,
 (function lock(){
   const HASH = '66b1461a64e3a1c877a776ebb0239d72fc683aece13cf8ff7b26a4a6598591c8';
   const root = document.documentElement;
-  if (!root.classList.contains('locked')) return;
   const dots = Array.from(document.querySelectorAll('#lock-dots span'));
   const msg = document.getElementById('lock-msg');
   let pin = '';
@@ -1270,7 +1269,6 @@ window.CC_EXTRA = [...MOVES, ...SLEEPS, ...FOODS, ...FOODS2, ...FOODS3, ...WAYS,
   }
   async function check() {
     if (await hash('app-tana-2:' + pin) === HASH) {
-      try { localStorage.setItem('tana2-unlock', '1'); } catch (e) {}
       root.classList.remove('locked');
       return;
     }
@@ -1295,6 +1293,14 @@ window.CC_EXTRA = [...MOVES, ...SLEEPS, ...FOODS, ...FOODS2, ...FOODS3, ...WAYS,
     if (/^[0-9]$/.test(e.key)) press(e.key);
     else if (e.key === 'Backspace') press('del');
   });
+  // ホーム画面から開き直したとき（30秒以上ほかを見ていたとき）は、もう一度パスワードを聞く
+  let hiddenAt = 0;
+  const relock = () => { pin = ''; show(); msg.textContent = ''; root.classList.add('locked'); scrollTo(0, 0); };
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) hiddenAt = Date.now();
+    else if (hiddenAt && Date.now() - hiddenAt > 30000) relock();
+  });
+  addEventListener('pageshow', e => { if (e.persisted) relock(); });
 })();
 </script>
 </body>
